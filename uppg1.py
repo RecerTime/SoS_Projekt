@@ -1,16 +1,15 @@
 import matplotlib.pyplot as plt
-import matplotlib.transforms as mtransforms
-from matplotlib.widgets import Button, Slider
+from matplotlib.widgets import Slider
 import numpy as np
 from scipy import signal
 
 def transfer_functions(G, R, C, R_ratio):
     k = R*C
 
-    H1 = signal.lti([1],[-(k/G)**2, (k/G)*R_ratio, 1])
-    H2 = signal.lti([1,0],[-R_ratio*k/G, 1, R_ratio*G/k])
-    #H3 = signal.lti([1,0,0],[-1, (G/k)*R_ratio, (G/k)**2])
-    H3 = signal.lti([1,0,0],[1, R_ratio, -G/k])
+    H1 = signal.lti([-1],[(k/G)**2, (k/G)*R_ratio, 1])
+    H2 = signal.lti([-1,0],[R_ratio*k/G, 1, R_ratio*G/k])
+    H3 = signal.lti([-1,0,0],[-1, (G/k)*R_ratio, (G/k)**2])
+    #H3 = signal.lti([1,0,0],[1, R_ratio, -G/k])
 
     return H1, H2, H3
 
