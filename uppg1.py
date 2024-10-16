@@ -9,7 +9,6 @@ def transfer_functions(G, R, C, R_ratio):
     H1 = signal.lti([-1],[(k/G)**2, (k/G)*R_ratio, 1])
     H2 = signal.lti([-1,0],[R_ratio*k/G, 1, R_ratio*G/k])
     H3 = signal.lti([-1,0,0],[-1, (G/k)*R_ratio, (G/k)**2])
-    #H3 = signal.lti([1,0,0],[1, R_ratio, -G/k])
 
     return H1, H2, H3
 

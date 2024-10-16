@@ -13,11 +13,11 @@ noise_amp = 1 #V
 
 samp_freq = 24e3 #Hz
 
-passband_drop = 3 #dB
-stopband_drop = 60 #dB
+passband_f = 4368.421052631579 #Hz
+stopband_f = 16000.0 #Hz
 
-passband_f = 8.5e3 #dB
-stopband_f = 10e3 #dB
+passband_drop = 15.0 #dB
+stopband_drop = 100.0 #dB
 
 def sin_wave(freq, amp, t):
     return amp * np.sin(freq * 2 * np.pi * t)
@@ -38,7 +38,7 @@ pb_f_slider = Slider(
     label='pb f',
     valmin=8e3,
     valmax=15e3,
-    valinit=8150,
+    valinit=passband_f,
 )
 ax_sb_f = fig.add_axes([0.05, 0.1, 0.9, 0.03])
 sb_f_slider = Slider(
@@ -46,7 +46,7 @@ sb_f_slider = Slider(
     label='sb f',
     valmin=8e3,
     valmax=20e3,
-    valinit=11e3,
+    valinit=stopband_f,
 )
 ax_pb_d = fig.add_axes([0.05, 0.15, 0.9, 0.03])
 pb_d_slider = Slider(
@@ -54,7 +54,7 @@ pb_d_slider = Slider(
     label='pb d',
     valmin=0,
     valmax=15,
-    valinit=1,
+    valinit=passband_drop,
 )
 ax_sb_d = fig.add_axes([0.05, 0.2, 0.9, 0.03])
 sb_d_slider = Slider(
@@ -62,7 +62,7 @@ sb_d_slider = Slider(
     label='sb d',
     valmin=0,
     valmax=100,
-    valinit=71.5,
+    valinit=stopband_drop,
 )
 def update(event):
     plot()
@@ -78,7 +78,7 @@ def plot():
     in_sig = signal + noise
 
     n, wn = scs.cheb1ord(2*np.pi*pb_f_slider.val, 2*np.pi*sb_f_slider.val, pb_d_slider.val, sb_d_slider.val, analog=True)
-    ba = scs.cheby1(n, pb_d_slider.val, wn, 'lp', analog=True)
+    ba = scs.cheby1(n, 3, wn, 'lp', analog=True)
     tout, yout, xout = scs.lsim(ba, in_sig[10 - 1::10], t[10 - 1::10])
 
     ax[0].plot(t, signal, alpha=0.5, label='signal')

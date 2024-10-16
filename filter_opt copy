@@ -1,0 +1,52 @@
+import numpy as np
+import scipy.signal as scs
+import multiprocessing
+
+wp = np.linspace(4e3, 11e3, 50)
+ws = np.linspace(6e3, 16e3, 50)
+gpass = np.linspace(1e-2, 15, 50)
+gstop = np.linspace(15+1e-2, 100, 50)
+
+high_lim = 20*np.log10(0.5/2**11)
+high_lim_f = 11e3
+
+low_lim = -3
+low_lim_f = 8e3
+
+def filter_test(wp, ws, gpass, gstop):
+    n, wn = scs.cheb1ord(2*np.pi*wp, 2*np.pi*ws, gpass, gstop, analog=True)
+    b, a = scs.cheby1(n, 3, wn, 'lp', analog=True)
+    w, h = scs.freqs(b, a)
+
+    f = w/(2*np.pi)
+    db = 20 * np.log10(abs(h))
+
+    if db[np.where(np.abs(f-high_lim_f) < 10)[0]] >= high_lim:
+        return False
+
+    return n, [wp, ws, gpass, gstop]
+
+res_dict = {}
+
+def filter_loop(wp):
+    for w_p in wp:
+        print(f'wp: {w_p}')
+        for w_s in ws:
+            print(f'ws: {w_s}')
+            for g_pass in gpass:
+                for g_stop in gstop:
+                    res = filter_test(w_p, w_s, g_pass, g_stop)
+                    if res != False:
+                        n, lst = res
+                        res_dict[n] = lst
+
+threads = 6
+pool = concurrent.futures.ThreadPoolExecutor(threads)
+
+wp_arrays = np.array_split(wp, threads)
+
+for wp_thread in wp_arrays:
+    pool.submit(filter_loop, wp_thread)
+pool.shutdown(wait=True)
+
+print(res_dict)

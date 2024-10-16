@@ -7,14 +7,10 @@ n = 10e3
 f = 50
 samp = 10e3
 
-R = 1
-C = 1
-G = 1
-R_ratio = 0.3206
+kG = 1/(300*2*np.pi)
+R_ratio = 1/np.sqrt(10)
 
-
-H1 = signal.lti([1],[-(k/G)**2, (k/G)*R_ratio, 1])
-
+H = signal.lti([-1],[(kG)**2, (kG)*R_ratio, 1])
 
 def fourier_series(t, f, n_terms):
     n_terms = int(n_terms)
@@ -25,9 +21,32 @@ def fourier_series(t, f, n_terms):
 
 # Generate t values
 t = np.linspace(0, 2*np.pi, int(samp))
+fs = fourier_series(t, f, n)
+
+tout, yout, xout = signal.lsim(system=H, U=fs, T=t)
+w, mag, phase = H.bode()
 
 # Create the plot
-plt.figure(figsize=(12, 8))
-plt.plot(t, fourier_series(t, f, n))
+fig, ax = plt.subplots(2)
+ax[0].plot(t, fs, label='In Signal')
+ax[0].plot(tout, yout, label='Filtered Signal')
+
+ax[0].set_ylim(-5, 4)
+ax[0].legend(loc='upper right')
+ax[0].grid(which='both', axis='both')
+
+
+ax[1].semilogx(w/(2*np.pi), mag, label=f'{np.max(mag)} dB')
+
+twin1 = ax[1].twinx()
+twin1.semilogx(w/(2*np.pi), phase, color='orange', label='Phase (deg)')
+
+twin1.legend(loc='upper right')
+
+ax[1].axvline(300, color='green')
+ax[1].axhline(10, color='green')
+ax[1].legend(loc='lower left')
+ax[1].grid(which='both', axis='both')
+
 
 plt.show()
